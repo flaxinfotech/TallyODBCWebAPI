@@ -1,0 +1,6 @@
+@TallyODBCWebAPI_HostAddress = http://localhost:5156
+
+GET {{TallyODBCWebAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
