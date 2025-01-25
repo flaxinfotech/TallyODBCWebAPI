@@ -31,9 +31,9 @@ namespace TallyIntegrationAPI.Controllers
                 var result = await _odbcService.AddOrUpdateLedgerAsync(
                     request.LedgerName,
                     request.ParentGroup,
-                    request.Address,
+                    request.AddressLine1,
                     request.Email,
-                    request.IsUpdate
+                    true
                 );
 
                 return Ok(new { Message = result });
@@ -44,59 +44,62 @@ namespace TallyIntegrationAPI.Controllers
             }
         }
 
-        // Add or update a ledger using XML
-        [HttpPost("ledger/xml")]
-        public async Task<IActionResult> AddOrUpdateLedgerXml([FromBody] LedgerRequest request)
+        [HttpPost("create-ledger")]
+        public async Task<IActionResult> CreateLedger([FromBody] LedgerRequest request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (string.IsNullOrWhiteSpace(request.LedgerName) || string.IsNullOrWhiteSpace(request.ParentGroup))
+            {
+                return BadRequest("Ledger Name and Parent Group are required.");
+            }
 
+            string result = await _xmlService.SendLedgerToTallyAsync(request);
+
+            if (result.Contains("Success"))
+            {
+                return Ok(new { Message = result });
+            }
+            else
+            {
+                return StatusCode(500, new { Error = result });
+            }
+        }
+
+        [HttpGet("get-all-ledgers")]
+        public async Task<IActionResult> GetAllLedgers()
+        {
             try
             {
-                var result = await _xmlService.AddOrUpdateLedgerAsync(
-                    request.LedgerName,
-                    request.ParentGroup,
-                    request.Address,
-                    request.Email
-                );
+                var ledgers = await _odbcService.GetAllLedgersAsync();
 
-                return Ok(new { Message = "Ledger processed successfully via XML.", Response = result });
+                if (ledgers.Count > 0)
+                {
+                    return Ok(ledgers);
+                }
+                else
+                {
+                    return NotFound(new { Message = "No ledgers found in Tally." });
+                }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 return StatusCode(500, new { Error = ex.Message });
             }
         }
 
-        // Get ledgers using ODBC
-        [HttpGet("ledgers/odbc")]
-        public async Task<IActionResult> GetLedgersOdbc()
-        {
-            try
-            {
-                var ledgers = await _odbcService.GetLedgersAsync();
-                return Ok(ledgers);
-            }
-            catch (System.Exception ex)
-            {
-                return StatusCode(500, new { Error = ex.Message });
-            }
-        }
-
-        // Get ledgers using XML
-        [HttpGet("ledgers/xml")]
-        public async Task<IActionResult> GetLedgersXml()
-        {
-            try
-            {
-                var result = await _xmlService.GetLedgersXmlAsync();
-                return Ok(new { Message = "Ledger list fetched successfully via XML.", Response = result });
-            }
-            catch (System.Exception ex)
-            {
-                return StatusCode(500, new { Error = ex.Message });
-            }
-        }
+        //// Get ledgers using XML
+        //[HttpGet("ledgers/xml")]
+        //public async Task<IActionResult> GetLedgersXml()
+        //{
+        //    try
+        //    {
+        //        var result = await _xmlService.GetLedgersXmlAsync();
+        //        return Ok(new { Message = "Ledger list fetched successfully via XML.", Response = result });
+        //    }
+        //    catch (System.Exception ex)
+        //    {
+        //        return StatusCode(500, new { Error = ex.Message });
+        //    }
+        //}
 
         [HttpGet("ledgers/advanced")]
         public async Task<IActionResult> GetLedgersWithFilters(

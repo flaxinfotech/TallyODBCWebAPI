@@ -4,20 +4,19 @@ namespace TallyIntegrationAPI.Models
 {
     public class LedgerRequest
     {
-        [Required(ErrorMessage = "Ledger name is required.")]
-        [MaxLength(100, ErrorMessage = "Ledger name cannot exceed 100 characters.")]
         public string LedgerName { get; set; }
-
-        [Required(ErrorMessage = "Parent group is required.")]
-        [MaxLength(50, ErrorMessage = "Parent group cannot exceed 50 characters.")]
         public string ParentGroup { get; set; }
-
-        [MaxLength(200, ErrorMessage = "Address cannot exceed 200 characters.")]
-        public string Address { get; set; }
-
-        [EmailAddress(ErrorMessage = "Invalid email format.")]
+        public string AddressLine1 { get; set; }
+        public string AddressLine2 { get; set; }
+        public string CountryName { get; set; }
+        public string StateName { get; set; }
+        public string Pincode { get; set; }
+        public string GSTRegistrationType { get; set; } // Example: Regular, Composition, Unregistered
+        public string GSTIN { get; set; }
+        public string ContactPerson { get; set; }
         public string Email { get; set; }
-
-        public bool IsUpdate { get; set; }
+        public decimal OpeningBalance { get; set; }
+        public decimal ClosingBalance { get; set; }
     }
+
 }

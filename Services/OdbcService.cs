@@ -60,38 +60,52 @@ namespace TallyIntegrationAPI.Services
         }
 
         // Retrieve all ledgers
-        public async Task<List<object>> GetLedgersAsync()
+        public async Task<List<LedgerRequest>> GetAllLedgersAsync()
         {
-            var ledgers = new List<object>();
+            List<LedgerRequest> ledgers = new List<LedgerRequest>();
 
             try
             {
-                using (var connection = new OdbcConnection(_connectionString))
+                using (OdbcConnection connection = new OdbcConnection(_connectionString))
                 {
                     await connection.OpenAsync();
 
-                    string query = "SELECT $Name, $Parent FROM Ledger";
+                    string query = @"SELECT $Name, $Parent, $Address[1], $Address[2], $CountryName, $StateName, $Pincode, $GSTRegistrationType, $GSTIN, $LedgerContact, $Email, $OpeningBalance FROM Ledger"; // No WHERE clause to fetch all ledgers
 
-                    using (var command = new OdbcCommand(query, connection))
-                    using (var reader = await command.ExecuteReaderAsync())
+                    using (OdbcCommand command = new OdbcCommand(query, connection))
                     {
-                        while (await reader.ReadAsync())
+                        using (OdbcDataReader reader = (OdbcDataReader)await command.ExecuteReaderAsync())
                         {
-                            ledgers.Add(new
+                            while (await reader.ReadAsync())
                             {
-                                Name = reader["$Name"].ToString(),
-                                Parent = reader["$Parent"].ToString()
-                            });
+                                ledgers.Add(new LedgerRequest
+                                {
+                                    LedgerName = reader["$Name"]?.ToString(),
+                                    ParentGroup = reader["$Parent"]?.ToString(),
+                                    AddressLine1 = reader["$Address[1]"]?.ToString(),
+                                    AddressLine2 = reader["$Address[2]"]?.ToString(),
+                                    CountryName = reader["$CountryName"]?.ToString(),
+                                    StateName = reader["$StateName"]?.ToString(),
+                                    Pincode = reader["$Pincode"]?.ToString(),
+                                    GSTRegistrationType = reader["$GSTRegistrationType"]?.ToString(),
+                                    GSTIN = reader["$GSTIN"]?.ToString(),
+                                    ContactPerson = reader["$LedgerContact"]?.ToString(),
+                                    Email = reader["$Email"]?.ToString(),
+                                    OpeningBalance = reader["$OpeningBalance"] != DBNull.Value
+                                        ? Convert.ToDecimal(reader["$OpeningBalance"])
+                                        : 0
+                                });
+                            }
                         }
                     }
                 }
-
-                return ledgers;
             }
             catch (Exception ex)
             {
-                throw new Exception($"ODBC Error: {ex.Message}");
+                throw new Exception($"Error fetching ledgers: {ex.Message}", ex);
             }
+
+            return ledgers;
         }
 
         public async Task<List<object>> GetFilteredLedgersAsync(string ledgerName = null, string parentGroup = null, DateTime? startDate = null, DateTime? endDate = null)
