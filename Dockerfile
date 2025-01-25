@@ -1,16 +1,19 @@
-# Use the official .NET 8.0 SDK image to build the app
+# Stage 1: Build the application
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
 # Copy the project file(s) and restore dependencies
-COPY TallyIntegrationAPI.csproj ./
+COPY TallyIntegrationAPI.csproj ./TallyIntegrationAPI/
+WORKDIR /app/TallyIntegrationAPI
 RUN dotnet restore
 
 # Copy the rest of the application files and build the app
-COPY . ./
-RUN dotnet publish -c Release -o out
+WORKDIR /app
+COPY . .
+WORKDIR /app/TallyIntegrationAPI
+RUN dotnet publish -c Release -o /app/out
 
-# Use the official .NET 8.0 runtime image to run the app
+# Stage 2: Run the application
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
 
@@ -20,5 +23,5 @@ COPY --from=build /app/out .
 # Expose port 80 to the outside world
 EXPOSE 80
 
-# Define the entry point for the application
+# Specify the entry point to run the application
 ENTRYPOINT ["dotnet", "TallyIntegrationAPI.dll"]
