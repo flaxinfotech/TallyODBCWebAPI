@@ -3,12 +3,15 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
 # Copy the project file(s) and restore dependencies
-COPY *.csproj ./
+COPY TallyIntegrationAPI/*.csproj ./TallyIntegrationAPI/
+WORKDIR /app/TallyIntegrationAPI
 RUN dotnet restore
 
 # Copy the rest of the application files and build the app
-COPY . ./
-RUN dotnet publish -c Release -o out
+WORKDIR /app
+COPY . .
+WORKDIR /app/TallyIntegrationAPI
+RUN dotnet publish -c Release -o /app/out
 
 # Stage 2: Run the application
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
