@@ -3,7 +3,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
 # Copy the project file(s) and restore dependencies
-COPY TallyIntegrationAPI/*.csproj ./TallyIntegrationAPI/
+COPY TallyIntegrationAPI.csproj ./TallyIntegrationAPI/
 WORKDIR /app/TallyIntegrationAPI
 RUN dotnet restore
 
