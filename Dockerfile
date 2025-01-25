@@ -21,4 +21,4 @@ COPY --from=build /app/out .
 EXPOSE 80
 
 # Specify the entry point to run the application
-ENTRYPOINT ["dotnet", "YourProjectName.dll"]
+ENTRYPOINT ["dotnet", "TallyIntegrationAPI.dll"]
