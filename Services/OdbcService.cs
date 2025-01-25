@@ -19,45 +19,6 @@ namespace TallyIntegrationAPI.Services
             _connectionString = $"DSN={dsn}";
         }
 
-        // Add or update a ledger
-        public async Task<string> AddOrUpdateLedgerAsync(string ledgerName, string parentGroup, string address, string email, bool isUpdate)
-        {
-            try
-            {
-                using (var connection = new OdbcConnection(_connectionString))
-                {
-                    await connection.OpenAsync();
-
-                    string query = isUpdate
-                        ? "UPDATE Ledger SET $Address = ?, $Email = ? WHERE $Name = ?"
-                        : "INSERT INTO Ledger ($Name, $Parent, $Address, $Email, $Country, $IsBillwiseOn) VALUES (?, ?, ?, ?, 'India', 'No')";
-
-                    using (var command = new OdbcCommand(query, connection))
-                    {
-                        if (isUpdate)
-                        {
-                            command.Parameters.AddWithValue("Address", address);
-                            command.Parameters.AddWithValue("Email", email);
-                            command.Parameters.AddWithValue("LedgerName", ledgerName);
-                        }
-                        else
-                        {
-                            command.Parameters.AddWithValue("LedgerName", ledgerName);
-                            command.Parameters.AddWithValue("ParentGroup", parentGroup);
-                            command.Parameters.AddWithValue("Address", address);
-                            command.Parameters.AddWithValue("Email", email);
-                        }
-
-                        var rowsAffected = await command.ExecuteNonQueryAsync();
-                        return rowsAffected > 0 ? "Ledger added/updated successfully." : "No rows affected.";
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"ODBC Error: {ex.Message}");
-            }
-        }
 
         // Retrieve all ledgers
         public async Task<List<LedgerRequest>> GetAllLedgersAsync()

@@ -19,31 +19,6 @@ namespace TallyIntegrationAPI.Controllers
             _xmlService = xmlService;
         }
 
-        // Add or update a ledger using ODBC
-        [HttpPost("ledger/odbc")]
-        public async Task<IActionResult> AddOrUpdateLedgerOdbc([FromBody] LedgerRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            try
-            {
-                var result = await _odbcService.AddOrUpdateLedgerAsync(
-                    request.LedgerName,
-                    request.ParentGroup,
-                    request.AddressLine1,
-                    request.Email,
-                    true
-                );
-
-                return Ok(new { Message = result });
-            }
-            catch (System.Exception ex)
-            {
-                return StatusCode(500, new { Error = ex.Message });
-            }
-        }
-
         [HttpPost("create-ledger")]
         public async Task<IActionResult> CreateLedger([FromBody] LedgerRequest request)
         {
